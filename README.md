@@ -3,7 +3,9 @@ Simple C++ library for creating neural networks. For graphical applications inst
 
 # Usage
 To create a network you shoud firstly create layer objects.
+```cpp
 Layer layer(number of neurons on the layer including bias, is there a bias or not (bool));
+```
 
 #### Creating network: 
 ```cpp

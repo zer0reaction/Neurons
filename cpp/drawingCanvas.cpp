@@ -1,10 +1,28 @@
 #include <SFML/Graphics.hpp>
-#include "scuffed_neurons.hpp"
+#include "neurons.hpp"
 #include <SFML/Window/Keyboard.hpp>
 #include <vector>
 
+void initNumberArray(int** &number) {
+  number = new int* [28];
+
+  for(int i = 0; i < 28; i++) {
+    number[i] = new int[28];
+    for(int j = 0; j < 28; j++)
+      number[i][j] = 0;
+  }
+}
+
+void initDataArray(int*** &data, int numberOfnumbers) {
+  data = new int** [numberOfnumbers];
+
+  for(int i = 0; i < numberOfnumbers; i++) {
+    initNumberArray(data[i]);
+  }
+}
+
 void showNumber(sf::RenderWindow &window,
-                std::vector<std::vector<int>> number) {
+                int** &number) {
   for (int y = 0; y < 28; y++) {
     for (int x = 0; x < 28; x++) {
       sf::RectangleShape r(sf::Vector2f(10, 10));
@@ -20,7 +38,7 @@ void showNumber(sf::RenderWindow &window,
   }
 }
 
-void showAnswers(sf::RenderWindow &window, std::vector<double> answers,
+void showAnswers(sf::RenderWindow &window, double* &answers,
                  sf::Font font) {
   int xpos = 280 + 50;
   for (int i = 0; i < 10; i++) {
@@ -40,7 +58,7 @@ void showAnswers(sf::RenderWindow &window, std::vector<double> answers,
   }
 }
 
-void moveNumber(std::vector<std::vector<int>> &number) {
+void moveNumber(int** &number) {
   int offsetY = 0;
   int offsetX = 0;
 
@@ -91,7 +109,7 @@ void moveNumber(std::vector<std::vector<int>> &number) {
   }
 }
 
-void stretchNumber(std::vector<std::vector<int>> &number) {
+void stretchNumber(int** &number) {
   int offsetTop = 0;
   int offsetLeft = 0;
   int offsetRight = 0;
@@ -136,7 +154,9 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     else break;
   }
 
-  std::vector<std::vector<int>> stretched(28, std::vector<int>(28, 0));
+  int** stretched;
+  initNumberArray(stretched);
+
   int dimensionX = 28 - offsetLeft - offsetRight;
   int dimensionY = 28 - offsetTop - offsetBottom;
 
@@ -146,20 +166,31 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     }
   }
 
+  delete[] number;
   number = stretched;
 }
 
 int main() {
   using namespace std;
-  Layer fl(28 * 28, true);
-  Layer il1(512, true);
-  Layer il2(256, true);
-  Layer il3(128, true);
-  Layer il4(64, true);
-  Layer il5(32, true);
-  Layer ll(10, false);
-  Network network({&fl, &il1, &il2, &il3, &il4, &il5, &ll});
-  network.read_neuron_connections("n.data");
+  Layer* fl = new Layer (28 * 28 + 1, true);
+  Layer* il1 = new Layer (512 + 1, true);
+  Layer* il2 = new Layer (256 + 1, true);
+  Layer* il3 = new Layer (128 + 1, true);
+  Layer* il4 = new Layer (64 + 1, true);
+  Layer* il5 = new Layer (32 + 1, true);
+  Layer* ll = new Layer (10, false);
+
+  Layer** layers = new Layer*[7];
+  layers[0] = fl;
+  layers[1] = il1;
+  layers[2] = il2;
+  layers[3] = il3;
+  layers[4] = il4;
+  layers[5] = il5;
+  layers[6] = ll;
+
+  Network network(layers, 7);
+  network.loadNeuronConnections("/home/zer0/Neurons/n.data");
   
 
   sf::RenderWindow window(sf::VideoMode(1395, 280), "View results",
@@ -169,10 +200,11 @@ int main() {
   font.loadFromFile("fonts/Hack-Regular.ttf");
   sf::Mouse::setPosition(sf::Vector2i(0,0), window);
 
-  vector<vector<int>> number(28, vector<int>(28, 0));
+  int** number;
+  initNumberArray(number);
 
   while (window.isOpen()) {
-    network.clear_inputs();
+    network.clearInputs();
 
     if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       sf::Vector2i localPos = sf::Mouse::getPosition(window);
@@ -227,13 +259,13 @@ int main() {
     int cnt = 0;
     for(int y = 0; y < 28; y++) {
       for(int x = 0; x < 28; x++) {
-        network.set_input(cnt, double(number[y][x]));
+        network.setInput(cnt, double(number[y][x]));
         cnt++;
       }
     }
 
-    network.calculate_all_values();
-    vector<double> answers = network.return_answers();
+    network.feedForward();
+    double* answers = network.returnAnswers();
 
     window.clear();
     showNumber(window, number);

@@ -29,6 +29,8 @@ void initNumberArray(int** &number) {
 
   for(int i = 0; i < 28; i++) {
     number[i] = new int[28];
+    for(int j = 0; j < 28; j++)
+      number[i][j] = 0;
   }
 }
 

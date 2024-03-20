@@ -1,11 +1,49 @@
-#include "scuffed_neurons.hpp"
+#include "neurons.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
-void stretchNumber(std::vector<std::vector<int>> &number) {
+void getData(int*** &data, int* &labels, std::string path, int numberOfnumbers) { 
+  using namespace std;
+
+  ifstream fin(path);
+
+  int n;
+  for(int i = 0; i < numberOfnumbers; i++) {
+    fin >> n;
+    labels[i] = n;
+
+    for(int y = 0; y < 28; y++) {
+      for(int x = 0; x < 28; x++) {
+        fin >> n;
+        data[i][y][x] = n;
+      } 
+    }
+  }
+  fin.close();
+}
+
+void initNumberArray(int** &number) {
+  number = new int* [28];
+
+  for(int i = 0; i < 28; i++) {
+    number[i] = new int[28];
+    for(int j = 0; j < 28; j++)
+      number[i][j] = 0;
+  }
+}
+
+void initDataArray(int*** &data, int numberOfnumbers) {
+  data = new int** [numberOfnumbers];
+
+  for(int i = 0; i < numberOfnumbers; i++) {
+    initNumberArray(data[i]);
+  }
+}
+
+void stretchNumber(int** &number) {
   int offsetTop = 0;
   int offsetLeft = 0;
   int offsetRight = 0;
@@ -50,7 +88,9 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     else break;
   }
 
-  std::vector<std::vector<int>> stretched(28, std::vector<int>(28, 0));
+  int** stretched;
+  initNumberArray(stretched);
+
   int dimensionX = 28 - offsetLeft - offsetRight;
   int dimensionY = 28 - offsetTop - offsetBottom;
 
@@ -60,10 +100,11 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     }
   }
 
+  delete[] number;
   number = stretched;
 }
 
-void showNumber(sf::RenderWindow &window, std::vector<std::vector<int>> number) {
+void showNumber(sf::RenderWindow &window, int** &number) {
   for (int y = 0; y < 28; y++) {
     for (int x = 0; x < 28; x++) {
       sf::RectangleShape r(sf::Vector2f(10, 10));
@@ -74,7 +115,7 @@ void showNumber(sf::RenderWindow &window, std::vector<std::vector<int>> number) 
   }
 }
 
-void showAnswers(sf::RenderWindow &window, std::vector<double> answers, sf::Font font) {
+void showAnswers(sf::RenderWindow &window, double* &answers, sf::Font font) {
   int xpos = 280 + 30;
   for (int i = 0; i < 10; i++) {
     sf::RectangleShape r(sf::Vector2f(1000 * answers[i], 28));
@@ -95,7 +136,7 @@ void showAnswers(sf::RenderWindow &window, std::vector<double> answers, sf::Font
   double maxAnswer = 0.0;
   int maxNum = 0;
 
-  for(int i = 0; i < answers.size(); i++) {
+  for(int i = 0; i < 10; i++) {
     if(answers[i] > maxAnswer) {
       maxAnswer = answers[i];
       maxNum = i;
@@ -164,34 +205,31 @@ void moveNumber(std::vector<std::vector<int>> &number) {
 int main() {
   using namespace std;
 
-  vector<vector<vector<int>>> test_data(
-      10000, vector<vector<int>>(28, vector<int>(28, 0)));
-  vector<double> labels_test(10000, 0);
-  ifstream fin_test("dataset/test.txt");
+  int*** test_data;
+  int* labels_test = new int[10000];
 
-  // Getting the data from file
-  for (int i = 0; i < 10000; i++) {
-    double n;
-    fin_test >> n;
-    labels_test[i] = n;
-    for (int j = 0; j < 28; j++) {
-      for (int k = 0; k < 28; k++) {
-        fin_test >> n;
-        test_data[i][j][k] = n;
-      }
-    }
-  }
-  fin_test.close();
+  initDataArray(test_data, 10000);
+  getData(test_data, labels_test, "/home/zer0/Neurons/dataset/test.txt", 10000);
 
-  Layer fl(28 * 28, true);
-  Layer il1(512, true);
-  Layer il2(256, true);
-  Layer il3(128, true);
-  Layer il4(64, true);
-  Layer il5(32, true);
-  Layer ll(10, false);
-  Network network({&fl, &il1, &il2, &il3, &il4, &il5, &ll});
-  network.read_neuron_connections("n.data");
+  Layer* fl = new Layer (28 * 28 + 1, true);
+  Layer* il1 = new Layer (512 + 1, true);
+  Layer* il2 = new Layer (256 + 1, true);
+  Layer* il3 = new Layer (128 + 1, true);
+  Layer* il4 = new Layer (64 + 1, true);
+  Layer* il5 = new Layer (32 + 1, true);
+  Layer* ll = new Layer (10, false);
+
+  Layer** layers = new Layer*[7];
+  layers[0] = fl;
+  layers[1] = il1;
+  layers[2] = il2;
+  layers[3] = il3;
+  layers[4] = il4;
+  layers[5] = il5;
+  layers[6] = ll;
+
+  Network network(layers, 7);
+  network.loadNeuronConnections("/home/zer0/Neurons/n.data");
 
   sf::RenderWindow window(sf::VideoMode(1395, 280), "View results",
                           sf::Style::Close);
@@ -202,18 +240,19 @@ int main() {
   int num = 0;
   while (window.isOpen()) {
 
-    network.clear_inputs();
+    network.clearInputs();
     stretchNumber(test_data[num]);
     int cnt = 0;
     for (int y = 0; y < 28; y++) {
       for (int x = 0; x < 28; x++) {
-        network.layers[0]->neurons[cnt]->value = test_data[num][y][x];
+        network.setInput(cnt, test_data[num][y][x]);
         cnt++;
       }
     }
 
-    network.calculate_all_values();
-    vector<double> answers = network.return_answers();
+    network.feedForward();
+    double* answers = network.returnAnswers();
+
     window.clear();
     showNumber(window, test_data[num]);
     showAnswers(window, answers, font);

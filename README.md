@@ -1,13 +1,27 @@
 # Neurons
-Simple neural network library in C++
+Simple C++ library for creating neural networks. For graphical applications install SFML.
 
 # Usage
-drawingCanvas and recognizeNumbers requires SFML library to work
+To create a network you shoud firstly create layer objects.
+Layer layer(number of neurons on the layer including bias, is there a bias or not (bool));
 
-neurons.hpp is the file containing all classes and methods
+#### Creating network: 
+```cpp
+Network network(pointer to the first element of pointers to layer objects, number of layers including first and last ones)
+```
+Network automatically sets random weights.
+Clearing input neuron values and setting them:
+```cpp
+network.clearInputs();
+network.setInput(neruon number starting from zero, value as double);
+```
 
-main.cpp is a simple file to train your network
-
-drawingCanvas/recognizeNumbers are programs to check the network behaviour. Shell files create an executable file in a folder "executables"
-
-https://drive.google.com/drive/folders/1eMy__c89U7MCRbymvN68ff0lLkH5l1sh?usp=sharing - dataset (put in a dataset folder)
+#### Learning and ourputting the result:
+```cpp
+network.feedForward();
+network.backProp(pointer to the first element of answers (double), learning rate (double), acceleration (double));
+```
+To return pointer to result array of doubles:
+```cpp
+double* answers = network.returnAnswers();
+```

@@ -3,14 +3,14 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <vector>
 
-void getTrainingData(std::vector<std::vector<std::vector<int>>> &data, std::vector<int> &labels) {
+void getData(int*** &data, int* &labels, std::string path, int numberOfnumbers) { 
   using namespace std;
-  ifstream fin("dataset/train.txt");
 
-  for(int i = 0; i < 60000; i++) {
-    int n;
+  ifstream fin(path);
+
+  int n;
+  for(int i = 0; i < numberOfnumbers; i++) {
     fin >> n;
     labels[i] = n;
 
@@ -18,32 +18,29 @@ void getTrainingData(std::vector<std::vector<std::vector<int>>> &data, std::vect
       for(int x = 0; x < 28; x++) {
         fin >> n;
         data[i][y][x] = n;
-      }
+      } 
     }
   }
   fin.close();
 }
 
-void getTestData(std::vector<std::vector<std::vector<int>>> &data, std::vector<int> &labels) {
-  using namespace std;
-  ifstream fin("dataset/train.txt");
+void initNumberArray(int** &number) {
+  number = new int* [28];
 
-  for(int i = 0; i < 10000; i++) {
-    int n;
-    fin >> n;
-    labels[i] = n;
-
-    for(int y = 0; y < 28; y++) {
-      for(int x = 0; x < 28; x++) {
-        fin >> n;
-        data[i][y][x] = n;
-      }
-    }
+  for(int i = 0; i < 28; i++) {
+    number[i] = new int[28];
   }
-  fin.close();
 }
 
-void stretchNumber(std::vector<std::vector<int>> &number) {
+void initDataArray(int*** &data, int numberOfnumbers) {
+  data = new int** [numberOfnumbers];
+
+  for(int i = 0; i < numberOfnumbers; i++) {
+    initNumberArray(data[i]);
+  }
+}
+
+void stretchNumber(int** &number) {
   int offsetTop = 0;
   int offsetLeft = 0;
   int offsetRight = 0;
@@ -88,7 +85,9 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     else break;
   }
 
-  std::vector<std::vector<int>> stretched(28, std::vector<int>(28, 0));
+  int** stretched;
+  initNumberArray(stretched);
+
   int dimensionX = 28 - offsetLeft - offsetRight;
   int dimensionY = 28 - offsetTop - offsetBottom;
 
@@ -98,10 +97,11 @@ void stretchNumber(std::vector<std::vector<int>> &number) {
     }
   }
 
+  delete[] number;
   number = stretched;
 }
 
-double calculateError(Network &n, std::vector<std::vector<std::vector<int>>> &training_data, std::vector<int> &labels_train, double batch_size) {
+double calculateError(Network &n, int*** &training_data, int* &labels_train, double batch_size) {
   double error = 0.0;
 
   for(int i = 0; i < int(batch_size); i++) {
@@ -126,14 +126,13 @@ double calculateError(Network &n, std::vector<std::vector<std::vector<int>>> &tr
         error += pow(0.0 - answers[j], 2.0);
       }
     }
-    //delete[] answers;
   }
 
   error /= batch_size;
   return error;
 }
 
-double calculateGuess(Network &n, std::vector<std::vector<std::vector<int>>> &training_data, std::vector<int> &labels_train, double batch_size) {
+double calculateGuess(Network &n, int*** &training_data, int* &labels_train, double batch_size) {
   double right = 0.0;
 
   for(int i = 0; i < int(batch_size); i++) {
@@ -157,7 +156,6 @@ double calculateGuess(Network &n, std::vector<std::vector<std::vector<int>>> &tr
         ans = j;
       }
     }
-    //delete[] answers;
 
     if(ans == labels_train[i]) {
       right += 1.0;
@@ -168,7 +166,7 @@ double calculateGuess(Network &n, std::vector<std::vector<std::vector<int>>> &tr
   return right;
 }
 
-void moveNumber(std::vector<std::vector<int>> &number) {
+void moveNumber(int** &number) {
   int offsetY = 0;
   int offsetX = 0;
 
@@ -220,7 +218,7 @@ void moveNumber(std::vector<std::vector<int>> &number) {
 }
 
 
-void learnIteration(Network &n, std::vector<std::vector<std::vector<int>>> &training_data, std::vector<int> &labels_train, int num,
+void learnIteration(Network &n, int*** &training_data, int* &labels_train, int num,
                     double learning_rate, double acceleration) {
   n.clearInputs();
 
@@ -243,7 +241,6 @@ void learnIteration(Network &n, std::vector<std::vector<std::vector<int>>> &trai
       rightAnswers[i] = 0.0;
   }
   n.backProp(rightAnswers, learning_rate, acceleration);
-  //delete [] rightAnswers;
 }
 
 int main() {
@@ -253,18 +250,22 @@ int main() {
   // Setting the neural network, how did we get here?
   Layer* fl = new Layer (28 * 28 + 1, true);
   Layer* il1 = new Layer (512 + 1, true);
-  Layer* il2 = new Layer (128 + 1, true);
-  Layer* il3 = new Layer (32 + 1, true);
+  Layer* il2 = new Layer (256 + 1, true);
+  Layer* il3 = new Layer (128 + 1, true);
+  Layer* il4 = new Layer (64 + 1, true);
+  Layer* il5 = new Layer (32 + 1, true);
   Layer* ll = new Layer (10, false);
 
-  Layer** layers = new Layer*[5];
+  Layer** layers = new Layer*[7];
   layers[0] = fl;
   layers[1] = il1;
   layers[2] = il2;
   layers[3] = il3;
-  layers[4] = ll;
+  layers[4] = il4;
+  layers[5] = il5;
+  layers[6] = ll;
 
-  Network network(layers, 5);
+  Network network(layers, 7);
 
   double learning_rate;
 	double acceleration;
@@ -279,27 +280,28 @@ int main() {
   if (s == "y")
     network.loadNeuronConnections("n.data");
 
-  // Setting stuff to work with training data
-  // Too bad
-  vector<vector<vector<int>>> training_data(60000, vector<vector<int>>(28, vector<int>(28, 0)));
-  vector<int> labels_train(60000, 0);
-  vector<vector<vector<int>>> test_data(10000, vector<vector<int>>(28, vector<int>(28, 0)));
-  vector<int> labels_test(10000, 0);
+  int*** training_data;
+  int*** test_data;
+  int* labels_train = new int[60000];
+  int* labels_test = new int[10000];
+
+  initDataArray(training_data, 60000);
+  initDataArray(test_data, 10000);
 
   // Getting the data from file
   cout << "Getting data from dataset...\n";
-  getTrainingData(training_data, labels_train);
-  getTestData(test_data, labels_test);
+  getData(training_data, labels_train, "/home/zer0/Neurons/dataset/train.txt", 60000);
+  getData(test_data, labels_test, "/home/zer0/Neurons/dataset/test.txt", 10000);
   cout << "Done!\n";
 
   // Preparing the network for learning process
   int jcount = 1;
 	for(int epoch = 1; epoch <= 1000000; epoch++) {
 		// Starting the learning process
-		for (int j = 1; j <= 1000; j++) {
+		for (int j = 0; j <= 59000; j++) {
       learnIteration(network, training_data, labels_train, j, learning_rate, acceleration);
 
-      if(jcount % 10000 == 0) {
+      if(jcount % 1000 == 0) {
         double error = calculateError(network, test_data, labels_train, 100.0);
         double guess = calculateGuess(network, test_data, labels_train, 100.0);
         error *= 100;

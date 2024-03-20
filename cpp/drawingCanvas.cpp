@@ -153,10 +153,12 @@ int main() {
   using namespace std;
   Layer fl(28 * 28, true);
   Layer il1(512, true);
-  Layer il2(128, true);
-  Layer il3(32, true);
+  Layer il2(256, true);
+  Layer il3(128, true);
+  Layer il4(64, true);
+  Layer il5(32, true);
   Layer ll(10, false);
-  Network network({&fl, &il1, &il2, &il3, &ll});
+  Network network({&fl, &il1, &il2, &il3, &il4, &il5, &ll});
   network.read_neuron_connections("n.data");
   
 

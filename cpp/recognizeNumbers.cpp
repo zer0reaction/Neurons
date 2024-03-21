@@ -118,7 +118,7 @@ void showNumber(sf::RenderWindow &window, int** &number) {
 void showAnswers(sf::RenderWindow &window, double* &answers, sf::Font font) {
   int xpos = 280 + 30;
   for (int i = 0; i < 10; i++) {
-    sf::RectangleShape r(sf::Vector2f(1000 * answers[i], 28));
+    sf::RectangleShape r(sf::Vector2f(100 * answers[i], 28));
     r.setFillColor(sf::Color::White);
     r.setOutlineColor(sf::Color::Black);
     r.setOutlineThickness(-1);
@@ -231,7 +231,7 @@ int main() {
   Network network(layers, 7);
   network.loadNeuronConnections("/home/zer0/Neurons/n.data");
 
-  sf::RenderWindow window(sf::VideoMode(1395, 280), "View results",
+  sf::RenderWindow window(sf::VideoMode(495, 280), "View results",
                           sf::Style::Close);
   window.setFramerateLimit(1);
   sf::Font font;

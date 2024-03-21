@@ -190,7 +190,7 @@ int main() {
   layers[6] = ll;
 
   Network network(layers, 7);
-  network.loadNeuronConnections("/home/zer0/Neurons/n.data");
+  network.loadNeuronConnections("n.data");
   
 
   sf::RenderWindow window(sf::VideoMode(1395, 280), "View results",

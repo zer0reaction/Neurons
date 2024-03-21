@@ -209,7 +209,7 @@ int main() {
   int* labels_test = new int[10000];
 
   initDataArray(test_data, 10000);
-  getData(test_data, labels_test, "/home/zer0/Neurons/dataset/test.txt", 10000);
+  getData(test_data, labels_test, "dataset/test.txt", 10000);
 
   Layer* fl = new Layer (28 * 28 + 1, true);
   Layer* il1 = new Layer (512 + 1, true);

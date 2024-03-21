@@ -292,8 +292,8 @@ int main() {
 
   // Getting the data from file
   cout << "Getting data from dataset...\n";
-  getData(training_data, labels_train, "/home/zer0/Neurons/dataset/train.txt", 60000);
-  getData(test_data, labels_test, "/home/zer0/Neurons/dataset/test.txt", 10000);
+  getData(training_data, labels_train, "dataset/train.txt", 60000);
+  getData(test_data, labels_test, "dataset/test.txt", 10000);
   cout << "Done!\n";
 
   // Preparing the network for learning process

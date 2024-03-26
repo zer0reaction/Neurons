@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <vector>
 
 const double e = exp(1.0);
 double sigmoid(double x) { return 1.0 / (1.0 + pow(e, -1 * x)); }
@@ -188,9 +189,15 @@ public:
     }
   }
 
-  Network(Layer** layers, int numOfLayers) {
+  Network(std::vector<int> numOfNeuronsOnLayers, std::vector<bool> biasOnLayers) {
+    Layer** layers = new Layer* [numOfNeuronsOnLayers.size()];
+    
+    for(int i = 0; i < numOfNeuronsOnLayers.size(); i++) {
+      layers[i] = new Layer(numOfNeuronsOnLayers[i], biasOnLayers[i]);
+    }
+
     this->layers = layers;
-    this->numOfLayers = numOfLayers;
+    this->numOfLayers = numOfNeuronsOnLayers.size();
 
     for(int i = 0; i < numOfLayers; i++) {
       if(i > 0) {

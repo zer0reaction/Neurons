@@ -250,24 +250,7 @@ int main() {
 	srand(time(NULL));
 
   // Setting the neural network, how did we get here?
-  Layer* fl = new Layer (28 * 28 + 1, true);
-  Layer* il1 = new Layer (512 + 1, true);
-  Layer* il2 = new Layer (256 + 1, true);
-  Layer* il3 = new Layer (128 + 1, true);
-  Layer* il4 = new Layer (64 + 1, true);
-  Layer* il5 = new Layer (32 + 1, true);
-  Layer* ll = new Layer (10, false);
-
-  Layer** layers = new Layer*[7];
-  layers[0] = fl;
-  layers[1] = il1;
-  layers[2] = il2;
-  layers[3] = il3;
-  layers[4] = il4;
-  layers[5] = il5;
-  layers[6] = ll;
-
-  Network network(layers, 7);
+  Network network({28*28+1, 512+1, 256+1, 128+1, 64+1, 32+1, 10}, {true, true, true, true, true, true, false});
 
   double learning_rate;
 	double acceleration;

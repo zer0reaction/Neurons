@@ -1,0 +1,8 @@
+dataset/test.txt
+dataset/train.txt
+executables/canvas
+executables/drawingCanvas.o
+executables/main.o
+executables/recognizeNumbers.o
+executables/sfml-app
+n.data

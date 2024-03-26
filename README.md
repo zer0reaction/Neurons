@@ -1,15 +1,9 @@
 # Neurons
 Simple C++ library for creating neural networks. For graphical applications install SFML.
 
-# Usage
-To create a network you shoud firstly create layer objects.
-```cpp
-Layer layer(number of neurons on the layer including bias, is there a bias or not (bool));
-```
-
 #### Creating network: 
 ```cpp
-Network network(pointer to the first element of pointers to layer objects, number of layers including first and last ones)
+Network network({number of neurons in layer 1 including bias, ...}, {bool doesLayer1HaveBias, ...});
 ```
 Network automatically sets random weights.
 Clearing input neuron values and setting them:

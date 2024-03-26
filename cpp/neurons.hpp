@@ -1,11 +1,8 @@
 #pragma once
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>
-#include <ctime>
 #include <fstream>
 #include <string>
-#include <iostream>
 
 const double e = exp(1.0);
 double sigmoid(double x) { return 1.0 / (1.0 + pow(e, -1 * x)); }
@@ -20,108 +17,6 @@ public:
   Layer* nextLayer;
   Layer* prevLayer;
   bool hasBias;
-
-//  void changeWeight(int thisNeuronNum, int nextNeuronNum, double desiredWeight) {
-//    if(thisNeuronNum > numOfNeurons) {
-//      std::cout << "thisNeuronNum > numOfNeurons, failed to changeWeight\n";
-//      return;
-//    }
-//    else if(nextNeuronNum > nextLayer->numOfNeurons) {
-//      std::cout << "nextNeuronNum > number of neurons in the next layer, failed to changeWeight\n";
-//      return;
-//    }
-//    else {
-//      neuronWeights[thisNeuronNum][nextNeuronNum] = desiredWeight;
-//    }
-//  }
-//
-//  void changeWeightChange(int thisNeuronNum, int nextNeuronNum, double desiredWeight) {
-//    if(thisNeuronNum > numOfNeurons) {
-//      std::cout << "thisNeuronNum > numOfNeurons, failed to changeWeightChange\n";
-//      return;
-//    }
-//    else if(nextNeuronNum > nextLayer->numOfNeurons) {
-//      std::cout << "nextNeuronNum > number of neurons in the next layer, failed to changeWeightChange\n";
-//      return;
-//    }
-//    else {
-//      neuronWeightChanges[thisNeuronNum][nextNeuronNum] = desiredWeight;
-//    }
-//  }
-//
-//  double getWeight(int thisNeuronNum, int nextNeuronNum) {
-//    if(thisNeuronNum > numOfNeurons) {
-//      std::cout << "thisNeuronNum > numOfNeurons, failed to getWeight\n";
-//      return 0;
-//    }
-//    else if(nextNeuronNum > nextLayer->numOfNeurons) {
-//      std::cout << "nextNeuronNum > number of neurons in the next layer, failed to getWeight\n";
-//      return 0;
-//    }
-//    else {
-//      return neuronWeights[thisNeuronNum][nextNeuronNum];
-//    }
-//  }
-//
-//  double getWeightChange(int thisNeuronNum, int nextNeuronNum) {
-//    if(thisNeuronNum > numOfNeurons) {
-//      std::cout << "thisNeuronNum > numOfNeurons, failed to getWeightChange\n";
-//      return 0;
-//    }
-//    else if(nextNeuronNum > nextLayer->numOfNeurons) {
-//      std::cout << "nextNeuronNum > number of neurons in the next layer, failed to getWeightChange\n";
-//      return 0;
-//    }
-//    else {
-//      return neuronWeightChanges[thisNeuronNum][nextNeuronNum];
-//    }
-//  }
-//
-//  void changeValue(int neuronNum, double desiredValue) {
-//    if(neuronNum > numOfNeurons) {
-//      std::cout << "neuronNum > numOfNeurons, failed to changeValue\n";
-//      return;
-//    }
-//    else if(hasBias && neuronNum == numOfNeurons-1) {
-//      // nothingness
-//    }
-//    else {
-//      neuronValues[neuronNum] = desiredValue;
-//    }
-//  }
-//
-//  double getValue(int neuronNum) {
-//    if(neuronNum > numOfNeurons) {
-//      std::cout << "neuronNum > numOfNeurons, failed to getValue\n";
-//      return 0;
-//    }
-//    else if(hasBias && neuronNum == numOfNeurons-1){
-//      return 1.0;
-//    }
-//    else {
-//      return neuronValues[neuronNum];
-//    }
-//  }
-//
-//  void changeDelta(int neuronNum, double desiredValue) {
-//    if(neuronNum > numOfNeurons) {
-//      std::cout << "neuronNum > numOfNeurons, failed to changeDelta\n";
-//      return;
-//    }
-//    else {
-//      neuronDeltas[neuronNum] = desiredValue;
-//    }
-//  }
-//
-//  double getDelta(int neuronNum) {
-//    if(neuronNum > numOfNeurons) {
-//      std::cout << "neuronNum > numOfNeurons, failed to getDelta\n";
-//      return 0;
-//    }
-//    else {
-//      return neuronDeltas[neuronNum];
-//    }
-//  }
 
   void setRandomWeights() {
     for(int i = 0; i < numOfNeurons; i++) {

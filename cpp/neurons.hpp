@@ -5,225 +5,226 @@
 #include <string>
 #include <vector>
 
-const double e = exp(1.0);
-double sigmoid(double x) { return 1.0 / (1.0 + pow(e, -1 * x)); }
 
 class Layer {
-public:
-  double* neuronValues;
-  double* neuronDeltas;
-  double** neuronWeights;
-  double** neuronWeightChanges;
-  int numOfNeurons;
-  Layer* nextLayer;
-  Layer* prevLayer;
-  bool hasBias;
+	public:
+		double* neuronValues;
+		double* neuronDeltas;
+		double** neuronWeights;
+		double** neuronWeightChanges;
+		int numOfNeurons;
+		Layer* nextLayer;
+		Layer* prevLayer;
+		bool hasBias;
 
-  void setRandomWeights() {
-    for(int i = 0; i < numOfNeurons; i++) {
-      for(int j = 0; j < nextLayer->numOfNeurons; j++) {
-        double weight = 0.0;
+		void setRandomWeights() {
+			for(int i = 0; i < numOfNeurons; i++) {
+				for(int j = 0; j < nextLayer->numOfNeurons; j++) {
+					double weight = 0.0;
 
-        do {
-          weight = double((rand() % 201) - 100) / 100.0;
-        }
-        while(weight == 0.0);
+					do {
+						weight = double((rand() % 201) - 100) / 100.0;
+					}
+					while(weight == 0.0);
 
-        neuronWeights[i][j] = weight;
-      }
-    }
-  }
+					neuronWeights[i][j] = weight;
+				}
+			}
+		}
 
-  Layer(int numOfNeurons, bool hasBias) {
-    this->numOfNeurons = numOfNeurons;
-    this->hasBias = hasBias;
+		Layer(int numOfNeurons, bool hasBias) {
+			this->numOfNeurons = numOfNeurons;
+			this->hasBias = hasBias;
 
-    neuronValues = new double[this->numOfNeurons];
-    for(int i = 0; i < this->numOfNeurons; i++) {
-      neuronValues[i] = 0.0;
-    }
-    neuronDeltas = new double[this->numOfNeurons];
-    for(int i = 0; i < this->numOfNeurons; i++) {
-      neuronDeltas[i] = 0.0;
-    }
+			neuronValues = new double[this->numOfNeurons];
+			for(int i = 0; i < this->numOfNeurons; i++) {
+				neuronValues[i] = 0.0;
+			}
+			neuronDeltas = new double[this->numOfNeurons];
+			for(int i = 0; i < this->numOfNeurons; i++) {
+				neuronDeltas[i] = 0.0;
+			}
 
-    if(hasBias) {
-      neuronValues[this->numOfNeurons - 1] = 1.0;
-    }
+			if(hasBias) {
+				neuronValues[this->numOfNeurons - 1] = 1.0;
+			}
 
-    neuronWeights = new double* [this->numOfNeurons];
-    neuronWeightChanges = new double* [this->numOfNeurons];
-  }
+			neuronWeights = new double* [this->numOfNeurons];
+			neuronWeightChanges = new double* [this->numOfNeurons];
+		}
 };
 
 class Network{
-public:
-  Layer** layers;
-  int numOfLayers;
+	public:
+		Layer** layers;
+		int numOfLayers;
 
-  void feedForward() {
-    for(int i = 1; i < numOfLayers; i++) {
-      Layer* thisLayer = layers[i];
-      Layer* prevLayer = layers[i-1];
+		const double e = exp(1.0);
+		double sigmoid(double x) { return 1.0 / (1.0 + pow(e, -1 * x)); }
 
-      for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-        double sum = 0.0;
+		void feedForward() {
+			for(int i = 1; i < numOfLayers; i++) {
+				Layer* thisLayer = layers[i];
+				Layer* prevLayer = layers[i-1];
 
-        for(int k = 0; k < prevLayer->numOfNeurons; k++) {
-          sum += prevLayer->neuronValues[k] * prevLayer->neuronWeights[k][j];
-        }
+				for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+					double sum = 0.0;
 
-        thisLayer->neuronValues[j] = sigmoid(sum);
-      }
-    }
-  }
+					for(int k = 0; k < prevLayer->numOfNeurons; k++) {
+						sum += prevLayer->neuronValues[k] * prevLayer->neuronWeights[k][j];
+					}
 
-  void setInput(int neuronNum, double value) {
-    layers[0]->neuronValues[neuronNum] = value;
-  }
+					thisLayer->neuronValues[j] = sigmoid(sum);
+				}
+			}
+		}
 
-  void clearInputs() {
-    for(int i = 0; i < layers[0]->numOfNeurons; i++) {
-      layers[0]->neuronValues[i] = 0.0;
-    }
-  }
+		void setInput(int neuronNum, double value) {
+			layers[0]->neuronValues[neuronNum] = value;
+		}
 
-  double* returnAnswers() {
-    return layers[numOfLayers-1]->neuronValues;
-  }
+		void clearInputs() {
+			for(int i = 0; i < layers[0]->numOfNeurons; i++) {
+				layers[0]->neuronValues[i] = 0.0;
+			}
+		}
 
-  int saveNeuronConnections(std::string path) {
-    std::ofstream fout(path);
+		double* returnAnswers() {
+			return layers[numOfLayers-1]->neuronValues;
+		}
 
-    if(!fout.is_open())
-      return -1;
-    
-    for(int i = 0; i < numOfLayers-1; i++) {
-      Layer* thisLayer = layers[i];
-      Layer* nextLayer = layers[i+1];
+		int saveNeuronConnections(std::string path) {
+			std::ofstream fout(path);
 
-      for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-        for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-          double weight = thisLayer->neuronWeights[j][k];
-          double weightChange = thisLayer->neuronWeightChanges[j][k];
-          fout.write((char *) &weight, sizeof(double));
-          fout.write((char *) &weightChange, sizeof(double));
-        }
-      }
-    }
+			if(!fout.is_open())
+				return -1;
 
-    return 0;
-  }
+			for(int i = 0; i < numOfLayers-1; i++) {
+				Layer* thisLayer = layers[i];
+				Layer* nextLayer = layers[i+1];
 
-  int loadNeuronConnections(std::string path) {
-    std::ifstream fin(path);
+				for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+					for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+						double weight = thisLayer->neuronWeights[j][k];
+						double weightChange = thisLayer->neuronWeightChanges[j][k];
+						fout.write((char *) &weight, sizeof(double));
+						fout.write((char *) &weightChange, sizeof(double));
+					}
+				}
+			}
 
-    if(!fin.is_open())
-      return -1;
+			return 0;
+		}
 
-    for(int i = 0; i < numOfLayers-1; i++) {
-      Layer* thisLayer = layers[i];
-      Layer* nextLayer = layers[i+1];
+		int loadNeuronConnections(std::string path) {
+			std::ifstream fin(path);
 
-      for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-        for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-          double weight;
-          double weightChange;
-          fin.read((char *) &weight, sizeof(double));
-          fin.read((char *) &weightChange, sizeof(double));
+			if(!fin.is_open())
+				return -1;
 
-          thisLayer->neuronWeights[j][k] = weight;
-          thisLayer->neuronWeightChanges[j][k] = weightChange;
-        }
-      }
-    }
-    
-    return 0;
-  }
+			for(int i = 0; i < numOfLayers-1; i++) {
+				Layer* thisLayer = layers[i];
+				Layer* nextLayer = layers[i+1];
 
-  void backProp(double* rightAnswers, double learningRate, double acceleration) {
-    // Calculating deltas for each neuron
-    for(int i = numOfLayers-1; i > 0; i--) {
-      // If it is the last layer
-      if(i == numOfLayers-1) {
-        Layer* thisLayer = layers[i];
+				for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+					for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+						double weight;
+						double weightChange;
+						fin.read((char *) &weight, sizeof(double));
+						fin.read((char *) &weightChange, sizeof(double));
 
-        for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-          double error = rightAnswers[j] - thisLayer->neuronValues[j];
-          double currentValue = thisLayer->neuronValues[j];
-          thisLayer->neuronDeltas[j] = error * currentValue * (1.0 - currentValue);
-        }
-      }
+						thisLayer->neuronWeights[j][k] = weight;
+						thisLayer->neuronWeightChanges[j][k] = weightChange;
+					}
+				}
+			}
 
-      // If it is not the last layer
-      else {
-        Layer* thisLayer = layers[i];
-        Layer* nextLayer = layers[i+1];
+			return 0;
+		}
 
-        for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-          double sum = 0.0;
+		void backProp(double* rightAnswers, double learningRate, double acceleration) {
+			// Calculating deltas for each neuron
+			for(int i = numOfLayers-1; i > 0; i--) {
+				// If it is the last layer
+				if(i == numOfLayers-1) {
+					Layer* thisLayer = layers[i];
 
-          for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-            sum += thisLayer->neuronWeights[j][k] * nextLayer->neuronDeltas[k];
-          }
+					for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+						double error = rightAnswers[j] - thisLayer->neuronValues[j];
+						double currentValue = thisLayer->neuronValues[j];
+						thisLayer->neuronDeltas[j] = error * currentValue * (1.0 - currentValue);
+					}
+				}
 
-          thisLayer->neuronDeltas[j] = sum * thisLayer->neuronValues[j] * (1.0 - thisLayer->neuronValues[j]);
-        }
-      }
-    }
+				// If it is not the last layer
+				else {
+					Layer* thisLayer = layers[i];
+					Layer* nextLayer = layers[i+1];
 
-    // Calculating weights based on the deltas
-    for(int i = numOfLayers-2; i >= 0; i--) {
-      Layer* thisLayer = layers[i];
-      Layer* nextLayer = layers[i+1];
+					for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+						double sum = 0.0;
 
-      for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-        for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-          double weightGradient = thisLayer->neuronValues[j] * nextLayer->neuronDeltas[k];
-          double deltaWeight = weightGradient * learningRate + acceleration * thisLayer->neuronWeightChanges[j][k];
+						for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+							sum += thisLayer->neuronWeights[j][k] * nextLayer->neuronDeltas[k];
+						}
 
-          thisLayer->neuronWeights[j][k] = thisLayer->neuronWeights[j][k] + deltaWeight;
-          thisLayer->neuronWeightChanges[j][k] = deltaWeight;
-        }
-      }
-    }
-  }
+						thisLayer->neuronDeltas[j] = sum * thisLayer->neuronValues[j] * (1.0 - thisLayer->neuronValues[j]);
+					}
+				}
+			}
 
-  Network(std::vector<int> numOfNeuronsOnLayers, std::vector<bool> biasOnLayers) {
-    Layer** layers = new Layer* [numOfNeuronsOnLayers.size()];
-    
-    for(int i = 0; i < numOfNeuronsOnLayers.size(); i++) {
-      layers[i] = new Layer(numOfNeuronsOnLayers[i], biasOnLayers[i]);
-    }
+			// Calculating weights based on the deltas
+			for(int i = numOfLayers-2; i >= 0; i--) {
+				Layer* thisLayer = layers[i];
+				Layer* nextLayer = layers[i+1];
 
-    this->layers = layers;
-    this->numOfLayers = numOfNeuronsOnLayers.size();
+				for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+					for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+						double weightGradient = thisLayer->neuronValues[j] * nextLayer->neuronDeltas[k];
+						double deltaWeight = weightGradient * learningRate + acceleration * thisLayer->neuronWeightChanges[j][k];
 
-    for(int i = 0; i < numOfLayers; i++) {
-      if(i > 0) {
-        layers[i]->prevLayer = layers[i-1];
-      }
-      if(i < numOfLayers-1) {
-        layers[i]->nextLayer = layers[i+1];
-      }
-    }
-    
-    for(int i = 0; i < numOfLayers-1; i++) {
-      Layer* thisLayer = this->layers[i];
-      Layer* nextLayer = this->layers[i+1];
+						thisLayer->neuronWeights[j][k] = thisLayer->neuronWeights[j][k] + deltaWeight;
+						thisLayer->neuronWeightChanges[j][k] = deltaWeight;
+					}
+				}
+			}
+		}
 
-      for(int j = 0; j < thisLayer->numOfNeurons; j++) {
-        thisLayer->neuronWeights[j] = new double[nextLayer->numOfNeurons];
-        for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-          thisLayer->neuronWeights[j][k] = 0.0;
-        }
-        thisLayer->neuronWeightChanges[j] = new double[nextLayer->numOfNeurons];
-        for(int k = 0; k < nextLayer->numOfNeurons; k++) {
-          thisLayer->neuronWeightChanges[j][k] = 0.0;
-        }
-      }
+		Network(std::vector<int> numOfNeuronsOnLayers, std::vector<bool> biasOnLayers) {
+			Layer** layers = new Layer* [numOfNeuronsOnLayers.size()];
 
-      layers[i]->setRandomWeights();
-    }
-  }
+			for(int i = 0; i < numOfNeuronsOnLayers.size(); i++) {
+				layers[i] = new Layer(numOfNeuronsOnLayers[i], biasOnLayers[i]);
+			}
+
+			this->layers = layers;
+			this->numOfLayers = numOfNeuronsOnLayers.size();
+
+			for(int i = 0; i < numOfLayers; i++) {
+				if(i > 0) {
+					layers[i]->prevLayer = layers[i-1];
+				}
+				if(i < numOfLayers-1) {
+					layers[i]->nextLayer = layers[i+1];
+				}
+			}
+
+			for(int i = 0; i < numOfLayers-1; i++) {
+				Layer* thisLayer = this->layers[i];
+				Layer* nextLayer = this->layers[i+1];
+
+				for(int j = 0; j < thisLayer->numOfNeurons; j++) {
+					thisLayer->neuronWeights[j] = new double[nextLayer->numOfNeurons];
+					for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+						thisLayer->neuronWeights[j][k] = 0.0;
+					}
+					thisLayer->neuronWeightChanges[j] = new double[nextLayer->numOfNeurons];
+					for(int k = 0; k < nextLayer->numOfNeurons; k++) {
+						thisLayer->neuronWeightChanges[j][k] = 0.0;
+					}
+				}
+
+				layers[i]->setRandomWeights();
+			}
+		}
 };

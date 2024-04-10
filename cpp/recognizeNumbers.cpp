@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-void getData(int*** &data, int* &labels, std::string path, int numberOfnumbers) { 
+void getData(int*** data, int* labels, std::string path, int numberOfnumbers) { 
     using namespace std;
 
     ifstream fin(path);
@@ -25,25 +25,25 @@ void getData(int*** &data, int* &labels, std::string path, int numberOfnumbers) 
     fin.close();
 }
 
-void initNumberArray(int** &number) {
-    number = new int* [28];
+void initNumberArray(int** *number) {
+    (*number) = new int* [28];
 
     for(int i = 0; i < 28; i++) {
-        number[i] = new int[28];
+        (*number)[i] = new int[28];
         for(int j = 0; j < 28; j++)
-            number[i][j] = 0;
+            (*number)[i][j] = 0;
     }
 }
 
-void initDataArray(int*** &data, int numberOfnumbers) {
-    data = new int** [numberOfnumbers];
+void initDataArray(int*** *data, int numberOfnumbers) {
+    (*data) = new int** [numberOfnumbers];
 
     for(int i = 0; i < numberOfnumbers; i++) {
-        initNumberArray(data[i]);
+        initNumberArray(&((*data)[i]));
     }
 }
 
-void stretchNumber(int** &number) {
+void stretchNumber(int** *number) {
     int offsetTop = 0;
     int offsetLeft = 0;
     int offsetRight = 0;
@@ -53,7 +53,7 @@ void stretchNumber(int** &number) {
     for(int y = 0; y < 28; y++) {
         bool f = false;
         for(int x = 0; x < 28; x++)
-            if(number[y][x] > 0) f = true;
+            if((*number)[y][x] > 0) f = true;
 
         if(!f) offsetTop++;
         else break;
@@ -62,7 +62,7 @@ void stretchNumber(int** &number) {
     for(int y = 27; y >= 0; y--) {
         bool f = false;
         for(int x = 0; x < 28; x++)
-            if(number[y][x] > 0) f = true;
+            if((*number)[y][x] > 0) f = true;
 
         if(!f) offsetBottom++;
         else break;
@@ -71,7 +71,7 @@ void stretchNumber(int** &number) {
     for(int x = 0; x < 28; x++) {
         bool f = false;
         for(int y = 0; y < 28; y++) 
-            if(number[y][x] > 0)
+            if((*number)[y][x] > 0)
                 f = true;
 
         if(!f) offsetLeft++;
@@ -81,7 +81,7 @@ void stretchNumber(int** &number) {
     for(int x = 27; x >= 0; x--) {
         bool f = false;
         for(int y = 0; y < 28; y++) 
-            if(number[y][x] > 0)
+            if((*number)[y][x] > 0)
                 f = true;
 
         if(!f) offsetRight++;
@@ -89,33 +89,34 @@ void stretchNumber(int** &number) {
     }
 
     int** stretched;
-    initNumberArray(stretched);
+    initNumberArray(&stretched);
 
     int dimensionX = 28 - offsetLeft - offsetRight;
     int dimensionY = 28 - offsetTop - offsetBottom;
 
     for(int y = 0; y < 28; y++) {
         for(int x = 0; x < 28; x++) {
-            stretched[y][x] = number[(y * dimensionY / 28) + offsetTop][(x * dimensionX / 28) + offsetLeft];
+            stretched[y][x] = (*number)[(y * dimensionY / 28) + offsetTop][(x * dimensionX / 28) + offsetLeft];
         }
     }
 
-    delete[] number;
-    number = stretched;
+    delete[] *number;
+    *number = stretched;
 }
 
-void showNumber(sf::RenderWindow &window, int** &number) {
+
+void showNumber(sf::RenderWindow *window, int** number) {
     for (int y = 0; y < 28; y++) {
         for (int x = 0; x < 28; x++) {
             sf::RectangleShape r(sf::Vector2f(10, 10));
             r.setFillColor(sf::Color(number[y][x], number[y][x], number[y][x]));
             r.setPosition(x * 10, y * 10);
-            window.draw(r);
+            window->draw(r);
         }
     }
 }
 
-void showAnswers(sf::RenderWindow &window, double* &answers, sf::Font font) {
+void showAnswers(sf::RenderWindow *window, double* answers, sf::Font font) {
     int xpos = 280 + 30;
     for (int i = 0; i < 10; i++) {
         sf::RectangleShape r(sf::Vector2f(100 * answers[i], 28));
@@ -123,14 +124,14 @@ void showAnswers(sf::RenderWindow &window, double* &answers, sf::Font font) {
         r.setOutlineColor(sf::Color::Black);
         r.setOutlineThickness(-1);
         r.setPosition(xpos, i * 28);
-        window.draw(r);
+        window->draw(r);
 
         sf::Text text;
         text.setString(std::to_string(i));
         text.setFont(font);
         text.setPosition(270, i * 28);
         text.setCharacterSize(27);
-        window.draw(text);
+        window->draw(text);
     }
 
     double maxAnswer = 0.0;
@@ -148,58 +149,7 @@ void showAnswers(sf::RenderWindow &window, double* &answers, sf::Font font) {
     text.setFont(font);
     text.setPosition(5, 248);
     text.setCharacterSize(27);
-    window.draw(text);
-}
-
-void moveNumber(std::vector<std::vector<int>> &number) {
-    int offsetY = 0;
-    int offsetX = 0;
-
-    for(int y = 0; y < 28; y++) {
-        bool f = false;
-        for(int x = 0; x < 28; x++) {
-            if(number[y][x] > 0) 
-                f = true;
-        }
-
-        if(f)  { 
-            break;
-        }
-        offsetY++; 
-    }
-
-    for(int x = 0; x < 28; x++) {
-        bool f = false;
-        for(int y = 0; y < 28; y++) {
-            if(number[y][x] > 0) 
-                f = true;
-        }
-
-        if(f)  { 
-            break;
-        }
-        offsetX++; 
-    }
-
-    for(int i = 0; i < offsetY; i++) {
-        for(int y = 0; y < 27; y++) {
-            number[y] = number[y+1];
-        }
-        for(int x = 0; x < 28; x++) {
-            number[27][x] = 0;
-        }
-    }
-
-    for(int i = 0; i < offsetX; i++) {
-        for(int y = 0; y < 28; y++) {
-            for(int x = 0; x < 27; x++) {
-                number[y][x] = number[y][x+1];
-            }
-            for(int y = 0; y < 28; y++) {
-                number[y][27] = 0;
-            }
-        }
-    }
+    window->draw(text);
 }
 
 int main() {
@@ -208,7 +158,7 @@ int main() {
     int*** test_data;
     int* labels_test = new int[10000];
 
-    initDataArray(test_data, 10000);
+    initDataArray(&test_data, 10000);
     getData(test_data, labels_test, "dataset/test.txt", 10000);
 
     Network network({28*28+1, 512+1, 256+1, 128+1, 64+1, 32+1, 10}, {true, true, true, true, true, true, false});
@@ -224,7 +174,7 @@ int main() {
     while (window.isOpen()) {
 
         network.clearInputs();
-        stretchNumber(test_data[num]);
+        stretchNumber(&test_data[num]);
         int cnt = 0;
         for (int y = 0; y < 28; y++) {
             for (int x = 0; x < 28; x++) {
@@ -237,8 +187,8 @@ int main() {
         double* answers = network.returnAnswers();
 
         window.clear();
-        showNumber(window, test_data[num]);
-        showAnswers(window, answers, font);
+        showNumber(&window, test_data[num]);
+        showAnswers(&window, answers, font);
         window.display();
 
         sf::Event event;

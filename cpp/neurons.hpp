@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 class Layer {
     public:
         double* neuronValues;

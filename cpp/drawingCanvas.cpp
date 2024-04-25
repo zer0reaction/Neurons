@@ -54,6 +54,23 @@ void showAnswers(sf::RenderWindow *window, double* answers,
         text.setCharacterSize(27);
         window->draw(text);
     }
+
+    double maxAnswer = 0.0;
+    int maxNum = 0;
+
+    for(int i = 0; i < 10; i++) {
+        if(answers[i] > maxAnswer) {
+            maxAnswer = answers[i];
+            maxNum = i;
+        }
+    }
+
+    sf::Text text;
+    text.setString(std::to_string(maxNum));
+    text.setFont(font);
+    text.setPosition(5, 248);
+    text.setCharacterSize(27);
+    window->draw(text);
 }
 
 void stretchNumber(int** *number) {

@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+using namespace Neurons;
+
 void getData(int*** data, int* labels, std::string path, int numberOfnumbers) { 
     using namespace std;
 
@@ -154,6 +157,7 @@ void showAnswers(sf::RenderWindow *window, double* answers, sf::Font font) {
 
 int main() {
     using namespace std;
+    using namespace Neurons;
 
     int*** test_data;
     int* labels_test = new int[10000];
@@ -161,8 +165,15 @@ int main() {
     initDataArray(&test_data, 10000);
     getData(test_data, labels_test, "dataset/test.txt", 10000);
 
-    Network network({28*28+1, 512+1, 256+1, 128+1, 64+1, 32+1, 10}, {true, true, true, true, true, true, false});
-    network.loadNeuronConnections("/home/zer0/Neurons/n.data");
+    Network network(
+            {28*28+1, 512+1, 256+1, 128+1, 64+1, 32+1, 10}, 
+            {true, true, true, true, true, true, false}
+            );
+
+    if(network.loadNeuronConnections("/home/zer0/Neurons/n.data") == -1) {
+        cout << "Error loading neuron connectins!\n";
+        return 1;
+    }
 
     sf::RenderWindow window(sf::VideoMode(495, 280), "View results",
             sf::Style::Close);

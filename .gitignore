@@ -6,3 +6,4 @@ executables/main.o
 executables/recognizeNumbers.o
 executables/sfml-app
 n.data
+n.data.bak

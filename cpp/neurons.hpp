@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+namespace Neurons {
 class Layer {
     public:
         double* neuronValues;
@@ -227,3 +228,4 @@ class Network{
             }
         }
 };
+}

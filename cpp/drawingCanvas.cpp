@@ -2,6 +2,10 @@
 #include "neurons.hpp"
 #include <SFML/Window/Keyboard.hpp>
 #include <vector>
+#include <iostream>
+
+using namespace std;
+using namespace Neurons;
 
 void initNumberArray(int** *number) {
     (*number) = new int* [28];
@@ -114,10 +118,12 @@ void stretchNumber(int** *number) {
 }
 
 int main() {
-    using namespace std;
-
     Network network({28*28+1, 512+1, 256+1, 128+1, 64+1, 32+1, 10}, {true, true, true, true, true, true, false});
-    network.loadNeuronConnections("n.data");
+
+    if(network.loadNeuronConnections("n.data") == -1) {
+        cout << "Error loading neuron connections!\n";
+        return 1;
+    }
 
 
     sf::RenderWindow window(sf::VideoMode(495, 280), "View results",
